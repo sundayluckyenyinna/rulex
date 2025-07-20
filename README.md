@@ -32,6 +32,132 @@ Rulex is organized into three main Maven modules:
 
 ---
 
+## Design Patterns
+
+Rulex leverages several classic design patterns to ensure extensibility, maintainability, and clarity:
+
+- **Strategy Pattern:**
+  - Used for `Action` and `Condition` interfaces, allowing different implementations to be injected and executed dynamically.
+- **Composite Pattern:**
+  - Conditions can be composed (e.g., AND, OR, NOT) to form complex logical trees.
+- **Factory/Registry Pattern:**
+  - The `ParserRegistryConfiguration` dynamically registers and resolves action and condition types.
+- **Dependency Injection:**
+  - Spring Boot is used for managing dependencies and wiring components.
+- **Polymorphic Deserialization:**
+  - Jackson annotations allow dynamic (de)serialization of actions and conditions based on their type.
+
+---
+
+## Modules
+
+- **rulex-core**
+  - Core interfaces: `Action`, `Condition`, `EvaluationContext`, etc.
+  - Domain models: `Event`, `RuleDefinition`, `RuleExecutionResult`.
+  - Engine: Executes rules and actions.
+  - Parser: Parses rule definitions from JSON.
+
+- **rulex-api**
+  - REST API for rule evaluation.
+  - Payload and DTO classes.
+  - Service layer for orchestrating rule evaluation.
+
+- **rulex-starter**
+  - Spring Boot application entry point.
+
+---
+
+## How to Run
+
+### Prerequisites
+- Java 21+
+- Maven 3.8+
+
+### Build the Project
+```sh
+mvn clean install
+```
+
+### Run the Application
+From the project root:
+```sh
+cd rulex-starter
+mvn spring-boot:run
+```
+The API will be available at `http://localhost:8080`.
+
+---
+
+## API Usage
+
+### Evaluate a Rule
+**Endpoint:**  
+`POST /rule`
+
+**Request Body Example:**
+```json
+{
+  "ruleJson": "{ \"conditions\": { \"type\": \"event_occurred\", \"eventName\": \"login\" }, \"actions\": [ { \"type\": \"send_email\", \"template\": \"welcome\" } ] }",
+  "events": [
+    {
+      "name": "login",
+      "timestamp": "2024-06-01T12:00:00Z",
+      "userid": "user123",
+      "properties": {}
+    }
+  ],
+  "userAttributes": {
+    "email": "user@example.com"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "conditionMatched": true,
+  "actionsExecuted": ["send_email"],
+  "actionsNotExecuted": []
+}
+```
+
+---
+
+## Extending Rulex
+
+### Add a New Action
+1. Implement the `Action` interface.
+2. Annotate with `@Component`.
+3. Register the new action type in your JSON payloads.
+
+### Add a New Condition
+1. Implement the `Condition` interface.
+2. Annotate with `@Component`.
+3. Register the new condition type in your JSON payloads.
+
+#### Example
+```java
+@Component
+public class MyCustomAction implements Action {
+    private String type = "my_custom_action";
+    public void execute(EvaluationContext context) {
+        // Custom logic
+    }
+    public String getType() { return type; }
+}
+```
+
+---
+
+## Contributing
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Write tests for your feature or bugfix.
+4. Submit a pull request.
+
+---
+
 ## Key Interfaces
 
 Below is a table explaining the purpose and role of each interface in the `rulex-core` module, along with example snippets and typical implementors:
@@ -49,140 +175,5 @@ Below is a table explaining the purpose and role of each interface in the `rulex
 | **ActionExecutor**         | Executes a list of actions and returns execution results.                                   | `Map<String, List<String>> executeAll(List<Action>, EvaluationContext)` | `DefaultActionExecutor`                                                                                       |
 | **RuleDefinitionParser**   | Parses a rule definition from a JSON string.                                                | `RuleDefinition parseRule(String ruleJson)`                    | `DefaultRuleDefinitionParser`                                                                                 |
 
----
-
-### Example Snippets
-
-#### TypeIdentifiable
-```java
-public interface TypeIdentifiable {
-    String getType();
-}
-```
-*Used by:*
-```java
-public class SendEmailAction implements Action {
-    private String type = "send_email";
-    public String getType() { return type; }
-    // ...
-}
-```
-
-#### AttributeAware
-```java
-public interface AttributeAware {
-    String getField();
-}
-```
-*Used by:*
-```java
-public class AttributeMatchCondition implements Condition, AttributeAware {
-    private String field;
-    public String getField() { return this.field; }
-    // ...
-}
-```
-
-#### TimeBoundAware
-```java
-public interface TimeBoundAware {
-    Duration getTimeWindow();
-}
-```
-*Used by:*
-```java
-public class EventCountCondition implements Condition, TimeBoundAware {
-    private int withinDays;
-    public Duration getTimeWindow() { return Duration.ofDays(this.withinDays); }
-    // ...
-}
-```
-
-#### Condition
-```java
-public interface Condition extends TypeIdentifiable {
-    boolean evaluate(EvaluationContext context);
-}
-```
-*Used by:*
-```java
-public class AndCondition implements Condition {
-    private List<Condition> rules;
-    public boolean evaluate(EvaluationContext context) {
-        return rules.stream().allMatch(condition -> condition.evaluate(context));
-    }
-}
-```
-
-#### Action
-```java
-public interface Action extends TypeIdentifiable {
-    void execute(EvaluationContext context);
-}
-```
-*Used by:*
-```java
-public class ApplyBonusAction implements Action {
-    public void execute(EvaluationContext context) {
-        // Apply bonus logic
-    }
-}
-```
-
-#### EvaluationContext
-```java
-public interface EvaluationContext {
-    Object getAttribute(String field);
-    List<Event> getAllEventsByName(String name);
-    // ...
-}
-```
-*Used by:*
-```java
-public class DefaultEvaluationContext implements EvaluationContext {
-    // Implements all methods
-}
-```
-
-#### RuleDefinitionExecutor
-```java
-public interface RuleDefinitionExecutor {
-    RuleExecutionResult execute(RuleDefinition ruleDefinition, EvaluationContext context);
-}
-```
-*Used by:*
-```java
-public class DefaultRuleDefinitionExecutor implements RuleDefinitionExecutor {
-    // Implements execute method
-}
-```
-
-#### ActionExcutor
-```java
-public interface ActionExcutor {
-    Map<String, List<String>> executeAll(List<Action> actions, EvaluationContext context);
-}
-```
-*Used by:*
-```java
-public class DefaultActionExecutor implements ActionExcutor {
-    // Implements executeAll method
-}
-```
-
-#### RuleDefinitionParser
-```java
-public interface RuleDefinitionParser {
-    RuleDefinition parseRule(String ruleJson);
-}
-```
-*Used by:*
-```java
-public class DefaultRuleDefinitionParser implements RuleDefinitionParser {
-    // Implements parseRule method
-}
-```
-
----
 
 For more details on architecture, design patterns, and how to run the project, see the earlier sections of this README. 
