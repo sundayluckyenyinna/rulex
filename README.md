@@ -132,8 +132,7 @@ The API will be available at `http://localhost:8080`.
 
 ### Add a New Condition
 1. Implement the `Condition` interface.
-2. Annotate with `@Component`.
-3. Register the new condition type in your JSON payloads.
+2. Add the new condition type in your JSON payloads.
 
 #### Example
 ```java
