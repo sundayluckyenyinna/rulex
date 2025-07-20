@@ -158,6 +158,23 @@ public class MyCustomAction implements Action {
 
 ---
 
+## Testing
+
+- **Unit Tests:**
+  - Located in `rulex-api/src/test/java/com/yugrow/rulex/`
+  - Cover core logic, conditions, actions, and service classes.
+
+- **Integration Tests:**
+  - Located in `rulex-starter/src/test/java/com/yugrow/rulex/`
+  - Cover API endpoints and full application context scenarios.
+
+Run all tests with:
+```sh
+mvn test
+```
+
+---
+
 ## Key Interfaces
 
 Below is a table explaining the purpose and role of each interface in the `rulex-core` module, along with example snippets and typical implementors:

@@ -27,9 +27,7 @@ public class RuleDefinitionTestServiceImpl implements RuleDefinitionTestService{
             String ruleJson = requestPayload.getRuleJson();
             List<Event> events = requestPayload.getEvents();
             Map<String, Object> userAttribute = requestPayload.getUserAttributes();
-
             EvaluationContext context = new DefaultEvaluationContext(events, userAttribute); //TODO: clients are allowed to implement their own
-
             RuleDefinition ruleDefinition = ruleDefinitionParser.parseRule(ruleJson);
             return ruleDefinitionExecutor.execute(ruleDefinition, context);
         }catch (Exception e){

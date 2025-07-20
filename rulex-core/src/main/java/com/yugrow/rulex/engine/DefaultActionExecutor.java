@@ -19,7 +19,6 @@ public class DefaultActionExecutor implements ActionExecutor {
         Map<String, List<String>> actionExecutionResults = new HashMap<>();
         actionExecutionResults.put(ACTIONS_EXECUTED, new ArrayList<>());
         actionExecutionResults.put(ACTIONS_NOT_EXECUTED, new ArrayList<>());
-
         for(Action action : actions){
             try{
                 action.execute(context);
