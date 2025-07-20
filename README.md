@@ -26,6 +26,12 @@ Rulex is organized into three main Maven modules:
 
 ---
 
+## UML Diagram
+
+![Rulex Core UML](rulex-core_uml.png)
+
+---
+
 ## Key Interfaces
 
 Below is a table explaining the purpose and role of each interface in the `rulex-core` module, along with example snippets and typical implementors:
