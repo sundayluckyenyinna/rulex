@@ -128,7 +128,7 @@ The API will be available at `http://localhost:8080`.
 ### Add a New Action
 1. Implement the `Action` interface.
 2. Annotate with `@Component`.
-3. Register the new action type in your JSON payloads.
+3. Add the new action type in your JSON payloads.
 
 ### Add a New Condition
 1. Implement the `Condition` interface.
