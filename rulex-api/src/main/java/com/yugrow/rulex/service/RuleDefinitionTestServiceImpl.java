@@ -24,7 +24,7 @@ public class RuleDefinitionTestServiceImpl implements RuleDefinitionTestService{
     @Override
     public RuleExecutionResult processRuleEvaluation(RuleEvaluationRequestPayload requestPayload){
         try {
-            String ruleJson = requestPayload.getRuleJson();
+            String ruleJson = requestPayload.getRuleJson();  // TODO: Do proper validation for ruleJson structure
             List<Event> events = requestPayload.getEvents();
             Map<String, Object> userAttribute = requestPayload.getUserAttributes();
             EvaluationContext context = new DefaultEvaluationContext(events, userAttribute); //TODO: clients are allowed to implement their own
